@@ -1,7 +1,11 @@
+# import "request" because working the query parameter to make the use of "next" in the login route...redirect back to the login page.
 from flask import render_template, url_for, flash, redirect, request
 from flaskblog import app, db, bcrypt
 from flaskblog.forms import RegistrationForm, LoginForm
 from flaskblog.models import User, Post
+# Making use of the current_user to stay on the home page if they press login.
+# import logout_user to logout the user
+# import login_required to make sure the user is logged in to access the route
 from flask_login import login_user, current_user, logout_user, login_required
 
 
@@ -34,6 +38,7 @@ def about():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+#   User stays on the home page if authenticated.
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     form = RegistrationForm()
@@ -56,6 +61,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
+#           accessing the next page if they try to login without registering.
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('home'))
         else:
@@ -65,10 +71,12 @@ def login():
 
 @app.route("/logout")
 def logout():
+#   using the logout_user to log the user out and redirect to the home page
     logout_user()
     return redirect(url_for('home'))
 
 
+# Creating the account routes to display after user logged in
 @app.route("/account")
 @login_required
 def account():
